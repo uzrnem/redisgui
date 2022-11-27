@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Redis GUI</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/css/bootstrap.min.css" integrity="sha512-SbiR/eusphKoMVVXysTKG/7VseWii+Y3FdHrt0EpKgpToZeemhqHeZeLWLhJutz/2ut2Vw1uQEj2MbRF+TVBUA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js" integrity="sha512-aVKKRRi/Q/YV+4mjoKBsE4x3H+BkegoM/em46NNlCqNTmUYADjBbeNefNxYV7giUp0VxICtqdrbqU7iVaeZNXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.2.0/axios.min.js" integrity="sha512-OdkysyYNjK4CZHgB+dkw9xQp66hZ9TLqmS2vXaBrftfyJeduVhyy1cOfoxiKdi4/bfgpco6REu6Rb+V2oVIRWg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/js/bootstrap.min.js" integrity="sha512-1/RvZTcCDEUjY/CypiMz+iqqtaoQfAITmNSJY17Myp4Ms5mdxPS5UV7iOfdZoxcGhzFbOm6sntTKJppjvuhg4g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.7.14/vue.min.js" integrity="sha512-BAMfk70VjqBkBIyo9UTRLl3TBJ3M0c6uyy2VMUrq370bWs7kchLNN9j1WiJQus9JAJVqcriIUX859JOm12LWtw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <style>
+  body {
+    background-color: #eeeeee;
+  }
+  .modal-open {
+    overflow: hidden;
+    padding-right: 15px;
+  }
+  .show {
+    display: block;
+  }
+  .disabled {
+    cursor: not-allowed !important;
+  }
+  td {
+    padding: 0px !important;
+    margin-left: 1rem;
+  }
+  a {
+    cursor: pointer;
+  }
+  </style>
+</head>
+
+<body>
+  <div id="redis-app">
+    <nav class="navbar navbar-dark bg-dark flex-md-nowrap p-0 shadow">
+      <a class="navbar-brand col-sm-3 col-md-2 mx-3 text-light" @click="reloadAll()">Redis</a>
+      <ul class="navbar-nav px-3">
+        <li class="nav-item text-nowrap">
+          <a class="nav-link text-primary" @click="reloadAll()">Refresh</a>
+        </li>
+      </ul>
+    </nav>
+  
+    <div class="container-fluid">
+      <div class="row">
+        <nav class="col-md-2 d-none d-md-block bg-light sidebar" style="min-height: 90vh;">
+          <div class="sidebar-sticky mt-2">
+            <ul class="nav flex-column">
+              <li class="nav-item">
+                <a class="text-success font-weight-bold" @click="reloadAll()">Keys</a>
+              </li>
+              <li class="nav-item" v-for="key in keys">
+                <a class="nav-link p-1" @click="fetch(key)">{{key}}</a>
+              </li>
+            </ul>
+            <div v-if="keys.length == 0">
+              <p class="pt-2 p-1">No Records!</p>
+            </div>
+          </div>
+        </nav>
+  
+        <main role="main" class="col-md-9 mx-sm-auto col-lg-10 px-4">
+          <div v-if="key == null">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+              <h1 class="h2">Add New</h1>
+            </div>
+            <div class="table-responsive">
+              <div class="form-group">
+                <label for="remark">Name</label>
+                <input type="text" class="form-control" placeholder="key name" v-model="obj.name">
+              </div>
+              <div class="form-group">
+                <label for="amount">Type</label>
+                <select v-model="obj.type" class="form-control">
+                  <option disabled>Select Type</option>
+                  <option value="string">String</option>
+                  <option value="set">Set</option>
+                  <option value="hash">Hash</option>
+                </select>
+              </div>
+              <div class="form-group" v-if="obj.type == 'string'">
+                <label for="value">Value</label>
+                <textarea class="textarea form-control" placeholder="Enter value" rows="8" style="padding: 0.25rem;" v-model="obj.string"> </textarea>
+              </div>
+              <div class="form-group" v-if="obj.type == 'set'">
+                <div class="form-group">
+                  <label for="remark">Item</label>
+                  <input type="text" class="form-control" placeholder="Item value" v-model="obj.set_item">
+                </div>
+              </div>
+              <div class="form-group" v-if="obj.type == 'hash'">
+                <div class="form-group">
+                  <label for="remark">Key Value</label>
+                </div>
+                <div class="input-group mb-3">
+                  <input type="text" class="form-control" placeholder="key" v-model="obj.hash_item">
+                  <input type="text" class="form-control" placeholder="value" v-model="obj.hash_value">
+                </div>
+              </div>
+              <a class="btn btn-primary mt-1" @click="save()">Save</a>
+            </div>
+          </div>
+          <div v-if="key != null">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+              <h1 class="h2">{{ key }}
+                <span class="h6" v-if="data && data.type">( {{data.type.toUpperCase()}} )</span>
+              </h1>
+              <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <a class="btn btn-primary btn-sm mx-2" @click="renameConfirm()">Rename</a>
+                <a class="btn btn-danger btn-sm" @click="deleteConfirm()">Delete</a>
+              </div>
+            </div>
+            <div class="" v-if="data">
+              <!-- string -->
+              <div v-if="data.type == 'string'">
+                <div class="form-group">
+                  <textarea class="textarea form-control"
+                    placeholder="Enter value" rows="8" style="padding: 0.25rem;"
+                    v-model="data.data"> </textarea>
+                </div>
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-1">
+                  <a class="btn btn-secondary btn-sm mx-2" @click="fetch(key)">Refresh</a>
+                  <a class="btn btn-warning btn-sm" @click="saveString(key, data.data)">Save</a>
+                </div>
+              </div>
+              <!-- set -->
+              <div v-if="data.type == 'set'">
+                <div class="form-group">
+                  <label for="remark">Item</label>
+                  <input type="text" class="form-control" placeholder="Item value" v-model="obj.set_item">
+                </div>
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-1">
+                  <a class="btn btn-warning btn-sm" @click="addSet(key, obj.set_item)">Add</a>
+                </div>
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Items</th>
+                      <th scope="col">Delete</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="tag in data.list">
+                      <td><span class="mx-3">{{tag}}</span></td>
+                      <td>
+                        <a class="btn btn-link p-1" @click="removeSet(key, tag)">remove</a>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div v-if="data.type == 'hash'">
+                <div class="form-group">
+                  <label for="remark">Key Value</label>
+                </div>
+                <div class="input-group mb-3">
+                  <input type="text" class="form-control" placeholder="key" v-model="obj.hash_item">
+                  <input type="text" class="form-control" placeholder="value" v-model="obj.hash_value">
+                </div>
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-1">
+                  <a class="btn btn-warning btn-sm" @click="addHash(key, obj.hash_item, obj.hash_value)">Add</a>
+                </div>
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Item</th>
+                      <th scope="col">Value</th>
+                      <th scope="col">Delete</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="value, item in data.object">
+                      <td><span class="mx-3">{{item}}</span></td>
+                      <td><span class="mx-3">{{value}}</span></td>
+                      <td>
+                        <a class="btn btn-link p-1" @click="removeHash(key, item)">remove</a>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+      <div id="fade-div" class=""></div>
+      <div class="modal" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLiveLabel">Delete '{{key}}'?</h5>
+              <a class="btn-close" @click="closeDeleteConfirm()"></a>
+            </div>
+            <div class="modal-body">
+              <p>Are you sure about delete?</p>
+            </div>
+            <div class="modal-footer">
+              <a class="btn btn-secondary" @click="closeDeleteConfirm()">Close</a>
+              <a class="btn btn-danger" @click="deleteItem()">Confirm</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal" id="renameModal" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLiveLabel">Rename '{{key}}'?</h5>
+              <a class="btn-close" @click="closeRenameConfirm()"></a>
+            </div>
+            <div class="modal-body">
+              <p>Are you sure about rename?</p>
+  
+              <div class="form-group">
+                <label for="remark">New Name</label>
+                <input type="text" class="form-control" placeholder="new name" v-model="newName">
+              </div>
+            </div>
+            <div class="modal-footer">
+              <a class="btn btn-secondary" @click="closeRenameConfirm()">Close</a>
+              <a class="btn btn-primary" @click="renameItem()" :class="{disabled: newName == ''}">Rename</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <a style="text-decoration: none;color:gray;position: fixed;bottom: 8px;right: 16px;font-size: 18px;" href="https://github.com/uzrnem/redisgui" target="_blank">Contribute</a>
+</body>
+  <!-- our javascript -->
+  <script>
+    var app = new Vue({
+      el: '#redis-app',
+      data: {
+        keys: [],
+        key: null,
+        data: null,
+        newName: '',
+        obj: {type: 'string'}
+      },
+      created() {
+          console.debug('Component has been created!');
+      },
+      methods: {
+        fetch: async function(key) {
+          this.key = key
+          var res = await axios.get('key/'+key)
+          this.data = res.data
+        },
+        fetchKeys: async function() {
+          var res = await axios.get('keys')
+          this.keys = res.data
+        },
+        saveString: async function(name, string) {
+          var res = await axios.post('string', {
+            key: name,
+            value: string
+          })
+          this.obj = {type: 'string'}
+          return res
+        },
+        save: function() {
+          var newKey = this.obj.name
+          var type = this.obj.type
+          if (this.obj.type == "string") {
+            this.saveString(newKey, this.obj.string)
+          } else if (this.obj.type == "set") {
+            this.addSet(newKey, this.obj.set_item);
+          } else if (this.obj.type == "hash") {
+            this.addHash(newKey, this.obj.hash_item, this.obj.hash_value);
+          }
+          this.obj = {type}
+          this.reloadAll()
+          this.fetch(newKey)
+        },
+        addSet: async function(list, item) {
+          var res = await axios.post('set/'+list+'/'+item)
+          this.fetch(list)
+          this.obj.set_item = "";
+        },
+        removeSet: async function(key, tag) {
+          var res = await axios.delete('set/'+key+'/'+tag)
+          this.fetch(key)
+          this.obj.set_item = "";
+        },
+        addHash: async function(list, item, value) {
+          var res = await axios.post('hash/'+list+'/'+item+'/'+value)
+          this.fetch(list)
+          this.obj.hash_item = "";
+          this.obj.hash_value = "";
+        },
+        removeHash: async function(key, item) {
+          var res = await axios.delete('hash/'+key+'/'+item)
+          this.fetch(key)
+          this.obj.hash_item = "";
+          this.obj.hash_value = "";
+        },
+        reloadAll: function() {
+          console.debug('Reloaded..!');
+          this.fetchKeys();
+          this.key = null;
+          this.obj = {type:"string"}
+        },
+        //Rename Items
+        renameItem: async function() {
+          var newKey = this.newName
+          var type = this.obj.type
+          var res = await axios.post('rename',{
+            old: this.key,
+            new: this.newName
+          })
+          this.closeRenameConfirm()
+          this.reloadAll()
+          this.fetch(newKey)
+          this.obj = {type}
+        },
+        renameConfirm: function() {
+          this.newName = ''
+          document.body.className = "modal-open";
+          const fadeDiv = document.getElementById("fade-div");
+          fadeDiv.className = "modal-backdrop fade show";
+          const showModal = document.getElementById("renameModal");
+          showModal.classList.add("fade");
+          showModal.classList.add("show");
+        },
+        closeRenameConfirm: function() {
+          this.newName = ''
+          document.body.className = "";
+          const fadeDiv = document.getElementById("fade-div");
+          fadeDiv.className = "";
+          const showModal = document.getElementById("renameModal");
+          showModal.classList.remove("fade");
+          showModal.classList.remove("show");          
+        },
+        //Delete Items
+        deleteItem: async function() {
+          var res = await axios.delete('del/' + this.key)
+          this.closeDeleteConfirm()
+          this.reloadAll()
+        },
+        deleteConfirm: function() {
+          document.body.className = "modal-open";
+          const fadeDiv = document.getElementById("fade-div");
+          fadeDiv.className = "modal-backdrop fade show";
+          const showModal = document.getElementById("deleteModal");
+          showModal.classList.add("fade");
+          showModal.classList.add("show");
+        },
+        closeDeleteConfirm: function() {
+          document.body.className = "";
+          const fadeDiv = document.getElementById("fade-div");
+          fadeDiv.className = "";
+          const showModal = document.getElementById("deleteModal");
+          showModal.classList.remove("fade");
+          showModal.classList.remove("show");          
+        }
+      },
+      mounted() {
+        console.debug('Component has been Mounted!');
+        this.reloadAll();
+      }
+    });
+  </script>
+</html>

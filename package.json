@@ -1,0 +1,33 @@
+{
+  "name": "redis-gui",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm install && node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/uzrnem/redisgui.git"
+  },
+  "keywords": [
+    "javascript",
+    "html",
+    "css",
+    "redis",
+    "npm",
+    "node",
+    "vuejs"
+  ],
+  "author": "bhagyesh sunil patel",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/uzrnem/redisgui/issues"
+  },
+  "homepage": "https://github.com/uzrnem/redisgui#readme",
+  "dependencies": {
+    "body-parser": "^1.20.1",
+    "express": "^4.18.2",
+    "redis": "^3.0.2"
+  }
+}
