@@ -3,7 +3,7 @@
 ```
 services:
   redisgui:
-    image: uzrnem/redisgui:v0.2.0
+    image: uzrnem/redisgui:0.2.0
     container_name: redisgui
     environment:
       CONFIG_REDIS_URI: redis://localhost:6379

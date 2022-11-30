@@ -1,4 +1,4 @@
-#docker build -t redisgui:v1 .
+#docker build -t redisgui:0.2 .
 FROM node:16-alpine3.14
 
 #ENV NODE_ENV=production
@@ -12,10 +12,11 @@ RUN npm install
 
 COPY server.js server.js
 COPY public public
+COPY routes routes
 
 EXPOSE 9900
 
 CMD [ "node", "server.js" ]
 
-#docker tag redisgui:v1 uzrnem/redisgui
-#docker push uzrnem/redisgui:0.1.0
+#docker tag redisgui:0.2 uzrnem/redisgui:0.2.0
+#docker push uzrnem/redisgui:0.2.0
