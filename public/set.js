@@ -35,7 +35,7 @@
         </thead>
         <tbody>
           <tr v-for="tag in currObj.data">
-            <td><span class="mx-3">{{tag}}</span></td>
+            <td><span class="text-break mx-3">{{tag}}</span></td>
             <td>
               <a class="btn btn-link p-1" @click="removeSet(tag)">remove</a>
             </td>

@@ -74,7 +74,7 @@
         <a class="badge bg-danger mx-1 my-1" @click="leftPop()"
           v-if="currObj.data && currObj.data.length > 0">Left Pop</a>
         <br>
-        <span class="badge mx-1 my-1" :class="classes[i%7]"
+        <span class="badge mx-1 my-1 text-break" :class="classes[i%7]"
           v-for="item, i in currObj.data">{{item}}</span>
         <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-1">
           <a class="badge bg-danger mx-1 my-1" @click="rightPop()"

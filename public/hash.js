@@ -40,7 +40,7 @@
         <tbody>
           <tr v-for="value, item in currObj.data">
             <td><span class="mx-3">{{item}}</span></td>
-            <td><span class="mx-3">{{value}}</span></td>
+            <td><span class="text-break mx-3">{{value}}</span></td>
             <td>
               <a class="btn btn-link p-1" @click="removeHash(item)">remove</a>
             </td>
