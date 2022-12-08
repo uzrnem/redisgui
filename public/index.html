@@ -82,7 +82,10 @@
                 :curr-obj="currentObj" @show-alert="showAlert"></set-type>
               <hash-type v-else-if="currentObj.type == 'hash'" :refresh="fetch"
                 :curr-obj="currentObj" @show-alert="showAlert"></hash-type>
-              <string-type v-else :curr-obj="currentObj" @show-alert="showAlert"></string-type>
+              <sorted-set-type v-else-if="currentObj.type == 'zset'" :refresh="fetch"
+                :curr-obj="currentObj" @show-alert="showAlert"></sorted-set-type>
+              <string-type v-else :refresh="fetch"
+                :curr-obj="currentObj" @show-alert="showAlert"></string-type>
             </div>
           </div>
         </main>
@@ -148,6 +151,7 @@
                   <option value="set">Set</option>
                   <option value="list">List</option>
                   <option value="hash">Hash</option>
+                  <option value="zset">Sorted Set</option>
                 </select>
               </div>
             </div>
@@ -169,11 +173,12 @@
 <script src="./string.js"></script>
 <script src="./set.js"></script>
 <script src="./hash.js"></script>
+<script src="./sorted-set.js"></script>
 <script src="./list.js"></script>
 <script>
 
 var app = new Vue({
-  components: { StringType, SetType, HashType, ListType },
+  components: { StringType, SetType, HashType, ListType, SortedSetType },
   el: '#redis-app',
   data: {
     newObj: {
@@ -199,6 +204,7 @@ var app = new Vue({
         this.currentObj.type = type
       }
       this.refreshing = true
+      this.fetchKeys();
       setTimeout(() => { this.refreshing = false }, 900);
     },
     fetchKeys: async function() {
@@ -239,6 +245,12 @@ var app = new Vue({
     sendCommand: async function() {
       var command = this.terminal.command
       if (command == '') {
+        return
+      } else if (command == 'clean' || command == 'clear') {
+        this.terminal.cmdsDiv.innerHTML = ""
+        this.terminal.command = ""
+        this.terminal.cmdsList = []
+        this.terminal.cmdsPointer = null
         return
       }
       this.terminal.cmdsDiv.appendChild(this.createElement("p", "fw-normal mb-0", command));
@@ -315,6 +327,11 @@ var app = new Vue({
         this.terminal.command = ""
       } else {
         this.terminal.command = this.terminal.cmdsList[pointer]
+
+        setTimeout(() => {
+          var end = input.value.length
+          input.setSelectionRange(end, end);
+        }, 200);
       }
     };
   }

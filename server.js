@@ -38,6 +38,19 @@ var sendResponse = (res, key, type, err, data) => {
   }
 }
 
+var sendSetResponse = (res, key, type, err, data) => {
+  if (err != null) {
+    res.json({key, type, error: err});
+  } else {
+    var obj = {};
+    for ( c = 0 ; c < data.length; c++) {
+      obj[data[c]] = data[c+1]
+      c++;
+    }
+    res.json({key, type, data: obj});
+  }
+}
+
 app.get('/key/:key', (req, res) => {
   client.type(req.params.key, (err, taip) => {
     if (err != null) {
@@ -55,6 +68,10 @@ app.get('/key/:key', (req, res) => {
       client.lrange(req.params.key, 0, -1, (err, data) => {
         sendResponse(res, req.params.key, taip, err, data)
       })
+    } else if (taip == 'zset') {
+      client.zrange(req.params.key, 0, -1, 'withscores', (err, data) => {
+        sendSetResponse(res, req.params.key, taip, err, data)
+      })
     } else {
       client.get(req.params.key, (err, data) => {
         sendResponse(res, req.params.key, taip, err, data)
@@ -64,7 +81,7 @@ app.get('/key/:key', (req, res) => {
 })
 
 app.post('/rename', (req, res) => {
-  client.sendCommand("RENAME", [req.body.old, req.body.new], (err, value) => {
+  client.rename(req.body.old, req.body.new, (err, value) => {
     if (err != null) {
       res.json(err);
     } else {
@@ -77,6 +94,7 @@ app.use('/string', require('./routes/string.routes'));
 app.use('/set', require('./routes/set.routes'));
 app.use('/hash', require('./routes/hash.routes'));
 app.use('/list', require('./routes/list.routes'));
+app.use('/sorted-set', require('./routes/sorted-set.routes'))
 
 app.delete('/del/:key', (req, res) => {
   client.del(req.params.key, (err, value) => {

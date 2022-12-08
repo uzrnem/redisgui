@@ -9,13 +9,21 @@
     methods: {
       saveSet: async function(item) {
         var res = await axios.post('set/'+this.currObj.key+'/'+item)
-        this.refresh(this.currObj.key, null)
-        this.$emit('show-alert', "Item Added" )
+        if (res.data && res.data.code && res.data.code == "ERR") {
+          this.$emit('show-alert', "Error" )
+        } else {
+          this.refresh(this.currObj.key, null)
+          this.$emit('show-alert', "Item Added" )
+        }
       },
       removeSet: async function(item) {
         var res = await axios.delete('set/'+this.currObj.key+'/'+item)
-        this.refresh(this.currObj.key, 'set')
-        this.$emit('show-alert', "Item Removed" )
+        if (res.data && res.data.code && res.data.code == "ERR") {
+          this.$emit('show-alert', "Error" )
+        } else {
+          this.refresh(this.currObj.key, 'set')
+          this.$emit('show-alert', "Item Removed" )
+        }
       },
     },
     template: `<div>

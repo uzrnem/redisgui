@@ -9,13 +9,21 @@
     methods: {
       saveHash: async function(item, value) {
         var res = await axios.post('hash/'+this.currObj.key+'/'+item+'/'+value)
-        this.refresh(this.currObj.key, null)
-        this.$emit('show-alert', "Item Added" )
+        if (res.data && res.data.code && res.data.code == "ERR") {
+          this.$emit('show-alert', "Error" )
+        } else {
+          this.refresh(this.currObj.key, null)
+          this.$emit('show-alert', "Item Added" )
+        }
       },
       removeHash: async function(item) {
         var res = await axios.delete('hash/'+this.currObj.key+'/'+item)
-        this.refresh(this.currObj.key, 'hash')
-        this.$emit('show-alert', "Item Removed" )
+        if (res.data && res.data.code && res.data.code == "ERR") {
+          this.$emit('show-alert', "Error" )
+        } else {
+          this.refresh(this.currObj.key, 'hash')
+          this.$emit('show-alert', "Item Removed" )
+        }
       },
     },
     template: `<div>

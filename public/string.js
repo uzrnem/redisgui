@@ -5,14 +5,19 @@
 }(this, function () { 'use strict';
 
   var StringType = Vue.component('string-type', {
-    props: ['currObj'],
+    props: ['currObj', 'refresh'],
     methods: {
       saveString: async function() {
         var res = await axios.post('string', {
           key: this.currObj.key,
           value: this.currObj.data
         })
-        this.$emit('show-alert', res.data )
+        if (res.data && res.data.code && res.data.code == "ERR") {
+          this.$emit('show-alert', "Error" )
+        } else {
+          this.refresh(this.currObj.key, null)
+          this.$emit('show-alert', res.data )
+        }
       }
     },
     template: `<div>

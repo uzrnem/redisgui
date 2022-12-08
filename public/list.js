@@ -25,28 +25,44 @@
           return
         }
         var res = await axios.post('list/left/'+this.currObj.key+'/'+this.currObj.item)
-        this.currObj.item = ''
-        this.refresh(this.currObj.key, null)
-        this.$emit('show-alert', "Item Added" )
+        if (res.data && res.data.code && res.data.code == "ERR") {
+          this.$emit('show-alert', "Error" )
+        } else {
+          this.currObj.item = ''
+          this.refresh(this.currObj.key, null)
+          this.$emit('show-alert', "Item Added" )
+        }
       },
       rightPush: async function() {
         if (!this.currObj.item || this.currObj.item == '') {
           return
         }
         var res = await axios.post('list/right/'+this.currObj.key+'/'+this.currObj.item)
-        this.currObj.item = ''
-        this.refresh(this.currObj.key, null)
-        this.$emit('show-alert', "Item Added" )
+        if (res.data && res.data.code && res.data.code == "ERR") {
+          this.$emit('show-alert', "Error" )
+        } else {
+          this.currObj.item = ''
+          this.refresh(this.currObj.key, null)
+          this.$emit('show-alert', "Item Added" )
+        }
       },
       leftPop: async function() {
         var res = await axios.delete('list/left/'+this.currObj.key)
-        this.refresh(this.currObj.key, 'list')
-        this.$emit('show-alert', "Item Removed" )
+        if (res.data && res.data.code && res.data.code == "ERR") {
+          this.$emit('show-alert', "Error" )
+        } else {
+          this.refresh(this.currObj.key, 'list')
+          this.$emit('show-alert', "Item Removed" )
+        }
       },
       rightPop: async function() {
         var res = await axios.delete('list/right/'+this.currObj.key)
-        this.refresh(this.currObj.key, 'list')
-        this.$emit('show-alert', "Item Removed" )
+        if (res.data && res.data.code && res.data.code == "ERR") {
+          this.$emit('show-alert', "Error" )
+        } else {
+          this.refresh(this.currObj.key, 'list')
+          this.$emit('show-alert', "Item Removed" )
+        }
       },
     },
     template: `<div>

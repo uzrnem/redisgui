@@ -1,0 +1,15 @@
+#docker-compose -f docker-compose-test.yml up -d
+version: '3.7'
+
+services:
+  r1:
+    image: redis:6.2.6-alpine3.15
+    container_name: r1
+    network_mode: host
+  g1:
+    image: uzrnem/redisgui:0.3.0
+    container_name: g1
+    environment:
+      CONFIG_REDIS_URI: redis://localhost:6379
+      PORT: 8003
+    network_mode: host

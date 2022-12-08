@@ -7,7 +7,7 @@ router.post('/', (req, res) => {
     if (err != null) {
       res.json(err);
     } else {
-      res.json(value);
+      res.json({code: value});
     }
   })
 })
