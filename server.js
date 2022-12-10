@@ -94,7 +94,8 @@ app.use('/string', require('./routes/string.routes'));
 app.use('/set', require('./routes/set.routes'));
 app.use('/hash', require('./routes/hash.routes'));
 app.use('/list', require('./routes/list.routes'));
-app.use('/sorted-set', require('./routes/sorted-set.routes'))
+app.use('/sset', require('./routes/sorted-set.routes'));
+app.use('/geol', require('./routes/geo-location.routes'));
 
 app.delete('/del/:key', (req, res) => {
   client.del(req.params.key, (err, value) => {

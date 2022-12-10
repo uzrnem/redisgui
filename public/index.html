@@ -20,7 +20,7 @@
           <a class="nav-link text-white" @click="reloadAll()">Refresh</a>
         </li>
       </ul>
-    </nav>
+    </nav> <!-- MenuBar -->
   
     <div class="container-fluid">
       <div class="row">
@@ -45,7 +45,7 @@
               <p class="pt-2 p-1">No Records!</p>
             </div>
           </div>
-        </nav>
+        </nav> <!-- SideBar -->
 
         <main role="main" class="col-md-9 mx-sm-auto col-lg-10 px-4">
           <div :class="currentObj != null ? 'displayNone' : ''">
@@ -60,12 +60,20 @@
                 </div>
               </div>
             </div>
-          </div>
+          </div> <!-- Terminal -->
           <div v-if="currentObj != null">
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-              <h1 class="h2">{{ currentObj.key }}
-                <span class="h6">( {{currentObj.type.toUpperCase()}} )</span>
-              </h1>
+              <div>
+                <div class="h2">{{ currentObj.key }}</div>
+                <div class="h6">( {{currentObj.type.toUpperCase()}} )</div>
+                &nbsp;
+                <template v-if="currentObj.type == 'zset'">
+                  <a v-if="currentObj.sub_type != 'geol'" class="stretched-link"
+                    @click="fetchZset('geol');$forceUpdate()">Geo Location?</a>
+                  <a v-if="currentObj.sub_type == 'geol'" class="stretched-link"
+                    @click="fetchZset('sset');$forceUpdate()">Sorted Set?</a>
+                </template>
+              </div>
               <div class="d-grid gap-2 d-md-flex justify-content-md-end" v-if="!currentObj.isNew">
                 <a class="btn btn-secondary btn-sm" @click="fetch(currentObj.key, null)">
                   <span class="spinner-border spinner-border-sm" v-if="refreshing"></span>
@@ -82,12 +90,14 @@
                 :curr-obj="currentObj" @show-alert="showAlert"></set-type>
               <hash-type v-else-if="currentObj.type == 'hash'" :refresh="fetch"
                 :curr-obj="currentObj" @show-alert="showAlert"></hash-type>
-              <sorted-set-type v-else-if="currentObj.type == 'zset'" :refresh="fetch"
+              <sorted-set-type v-else-if="currentObj.type == 'zset' && currentObj.sub_type != 'geol'" :refresh="fetchZset"
                 :curr-obj="currentObj" @show-alert="showAlert"></sorted-set-type>
+              <geo-location-type v-else-if="currentObj.type == 'zset' && currentObj.sub_type == 'geol'" :refresh="fetchZset"
+                :curr-obj="currentObj" @show-alert="showAlert"></geo-location-type>
               <string-type v-else :refresh="fetch"
                 :curr-obj="currentObj" @show-alert="showAlert"></string-type>
             </div>
-          </div>
+          </div> <!-- Main Panel -->
         </main>
       </div>
       <div id="snackbar">Some text some message..</div>
@@ -151,7 +161,7 @@
                   <option value="set">Set</option>
                   <option value="list">List</option>
                   <option value="hash">Hash</option>
-                  <option value="zset">Sorted Set</option>
+                  <option value="zset">Sorted Set/Geo Location</option>
                 </select>
               </div>
             </div>
@@ -174,11 +184,15 @@
 <script src="./set.js"></script>
 <script src="./hash.js"></script>
 <script src="./sorted-set.js"></script>
+<script src="./geo-location.js"></script>
 <script src="./list.js"></script>
 <script>
 
 var app = new Vue({
-  components: { StringType, SetType, HashType, ListType, SortedSetType },
+  components: {
+    StringType, SetType, HashType,
+    ListType, SortedSetType, GeoLocationType
+  },
   el: '#redis-app',
   data: {
     newObj: {
@@ -205,6 +219,12 @@ var app = new Vue({
       }
       this.refreshing = true
       this.fetchKeys();
+      setTimeout(() => { this.refreshing = false }, 900);
+    },
+    fetchZset: async function(subType) {
+      var res = await axios.get(subType + '/' + this.currentObj.key)
+      this.currentObj = Object.assign(res.data, {type: 'zset',sub_type: subType});
+      this.refreshing = true
       setTimeout(() => { this.refreshing = false }, 900);
     },
     fetchKeys: async function() {

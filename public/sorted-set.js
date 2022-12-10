@@ -8,18 +8,19 @@
     props: ['currObj', 'refresh'],
     methods: {
       saveSortedItem: async function(member, score) {
-        var res = await axios.post('sorted-set/'+this.currObj.key+'/'+member+'/'+score)
+        var res = await axios.post('sset/'+this.currObj.key+'/'+member+'/'+score)
         if (res.data && res.data.code && res.data.code == "ERR") {
           this.$emit('show-alert', "Error" )
         } else {
-          this.refresh(this.currObj.key, null)
+          this.refresh('sset')
           this.$emit('show-alert', "Member Added" )
         }
       },
       updateSortedSet: function(member) {
         this.currObj.member = member
         this.currObj.isIncremented = true
-        this.$forceUpdate();
+        console.log(this.currObj)
+        //this.$forceUpdate();
       },
       cancel: function() {
         this.currObj.member = ""
@@ -28,20 +29,20 @@
         this.$forceUpdate();
       },
       incrSortedItem: async function(member, score) {
-        var res = await axios.post('sorted-set/incr/'+this.currObj.key+'/'+member+'/'+score)
+        var res = await axios.post('sset/incr/'+this.currObj.key+'/'+member+'/'+score)
         if (res.data && res.data.code && res.data.code == "ERR") {
           this.$emit('show-alert', "Error" )
         } else {
-          this.refresh(this.currObj.key, null)
+          this.refresh('sset')
           this.$emit('show-alert', "Member Incremented" )
         }
       },
       removeSortedItem: async function(member) {
-        var res = await axios.delete('sorted-set/'+this.currObj.key+'/'+member)
+        var res = await axios.delete('sset/'+this.currObj.key+'/'+member)
         if (res.data && res.data.code && res.data.code == "ERR") {
           this.$emit('show-alert', "Error" )
         } else {
-          this.refresh(this.currObj.key, 'zset')
+          this.refresh('sset')
           this.$emit('show-alert', "Member Removed" )
         }
       },
