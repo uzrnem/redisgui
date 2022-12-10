@@ -91,8 +91,8 @@
               <a class="btn btn-link p-1" @click="removeSortedItem(member)">remove</a>
             </td>
           </tr>
-          <tr v-if="!currObj.data || currObj.data.length == 0">
-            <td colspan="3" class="text-center"><span>No Record Found!</span></td>
+          <tr v-if="currObj.data == null || Object.keys(currObj.data).length === 0">
+            <td colspan="4" class="text-center"><span>No Record Found!</span></td>
           </tr>
         </tbody>
       </table>
