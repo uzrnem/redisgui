@@ -7,9 +7,9 @@ services:
     container_name: r1
     network_mode: host
   g1:
-    image: uzrnem/redisgui:0.3.0
+    image: uzrnem/redisgui:0.4.1
     container_name: g1
     environment:
-      CONFIG_REDIS_URI: redis://localhost:6379
+      CONFIG_REDIS_URI: redis://:${REDIS_PASS}@localhost:6379
       PORT: 8003
     network_mode: host

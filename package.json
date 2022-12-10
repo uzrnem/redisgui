@@ -1,7 +1,7 @@
 {
   "name": "redis-gui",
-  "version": "0.3.0",
-  "description": "",
+  "version": "0.4.1",
+  "description": "Redis GUI",
   "main": "index.js",
   "scripts": {
     "test": "npm install && node index.js"
